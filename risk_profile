@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>รายงานสถานะความเสี่ยง - กยท.</title>
+    
+    <!-- Google Fonts (Prompt) -->
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <style>
+        :root {
+            --raot-green: #006837;
+            --raot-light: #0B8043;
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+            --text-dark: #1a1a1a;
+            --text-gray: #555555;
+            --border-color: #e0e0e0;
+            
+            /* Matrix Colors */
+            --matrix-low: #4CAF50;      /* Green */
+            --matrix-med: #FFEB3B;      /* Yellow */
+            --matrix-high: #FF9800;     /* Orange */
+            --matrix-ext: #F44336;      /* Red */
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Prompt', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-dark);
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        .mobile-container {
+            width: 100%;
+            max-width: 480px;
+            background-color: var(--bg-color);
+            min-height: 100vh;
+            position: relative;
+            box-shadow: 0 0 20px rgba(0,0,0,0.05);
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Header Styling */
+        header {
+            background: linear-gradient(135deg, var(--raot-green), var(--raot-light));
+            color: white;
+            padding: 20px 20px 25px;
+            border-bottom-left-radius: 20px;
+            border-bottom-right-radius: 20px;
+            box-shadow: 0 4px 15px rgba(0, 104, 55, 0.2);
+            z-index: 10;
+        }
+
+        .header-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 5px;
+        }
+
+        .header-title i {
+            font-size: 28px;
+            background: rgba(255,255,255,0.2);
+            padding: 8px;
+            border-radius: 12px;
+        }
+
+        .header-title h1 {
+            font-size: 18px;
+            font-weight: 600;
+            line-height: 1.2;
+        }
+        
+        .header-subtitle {
+            font-size: 13px;
+            color: rgba(255,255,255,0.9);
+            margin-left: 56px;
+        }
+
+        .tabs-container {
+            padding: 15px 15px 5px;
+            background: var(--bg-color);
+        }
+
+        .tabs {
+            display: flex;
+            background: #e8ecea;
+            border-radius: 12px;
+            padding: 4px;
+            overflow-x: auto;
+            scrollbar-width: none; /* Firefox */
+        }
+        
+        .tabs::-webkit-scrollbar {
+            display: none; /* Chrome/Safari */
+        }
+
+        .tab-btn {
+            flex: 1;
+            min-width: max-content;
+            padding: 10px 15px;
+            border: none;
+            background: transparent;
+            color: var(--text-gray);
+            font-size: 13px;
+            font-weight: 500;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+
+        .tab-btn.active {
+            background: white;
+            color: var(--raot-green);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-weight: 600;
+        }
+
+        main {
+            flex: 1;
+            padding: 10px 15px 20px;
+            overflow-y: auto;
+        }
+
+        .risk-section {
+            background: white;
+            border-radius: 16px;
+            padding: 15px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+            margin-bottom: 15px;
+        }
+
+        .section-header {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--raot-green);
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .risk-factor-badge {
+            background: #e8f5e9;
+            color: var(--raot-green);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            display: inline-block;
+            margin-bottom: 10px;
+        }
+
+        /* Matrix Grid */
+        .matrix-container {
+            display: grid;
+            grid-template-columns: 20px 1fr;
+            grid-template-rows: 1fr 20px;
+            gap: 5px;
+            margin-bottom: 10px;
+        }
+
+        .y-axis-label {
+            grid-column: 1;
+            grid-row: 1;
+            writing-mode: vertical-rl;
+            transform: rotate(180deg);
+            text-align: center;
+            font-size: 10px;
+            color: var(--text-gray);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .x-axis-label {
+            grid-column: 2;
+            grid-row: 2;
+            text-align: center;
+            font-size: 10px;
+            color: var(--text-gray);
+            margin-top: 5px;
+        }
+
+        .matrix-grid {
+            grid-column: 2;
+            grid-row: 1;
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            grid-template-rows: repeat(5, 1fr);
+            aspect-ratio: 1 / 1;
+            border: 1px solid #333;
+            background: #fff;
+        }
+
+        /* Axis Markers inside grid */
+        .matrix-cell {
+            border: 1px solid #333;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Specific Cell Colors based on Risk Profile Matrix - 5 Level Standard */
+        /* Row 5 (Impact 5) - Top */
+        .cell-1-5 { background-color: #FFFF00; } /* เหลือง */
+        .cell-2-5 { background-color: #FF9900; } /* ส้ม */
+        .cell-3-5 { background-color: #FF9900; } /* ส้ม */
+        .cell-4-5 { background-color: #FF0000; } /* แดง */
+        .cell-5-5 { background-color: #FF0000; } /* แดง */
+
+        /* Row 4 (Impact 4) */
+        .cell-1-4 { background-color: #99CC33; } /* เขียวอ่อน */
+        .cell-2-4 { background-color: #FFFF00; } /* เหลือง */
+        .cell-3-4 { background-color: #FF9900; } /* ส้ม */
+        .cell-4-4 { background-color: #FF9900; } /* ส้ม */
+        .cell-5-4 { background-color: #FF0000; } /* แดง */
+
+        /* Row 3 (Impact 3) */
+        .cell-1-3 { background-color: #99CC33; } /* เขียวอ่อน */
+        .cell-2-3 { background-color: #FFFF00; } /* เหลือง */
+        .cell-3-3 { background-color: #FFFF00; } /* เหลือง */
+        .cell-4-3 { background-color: #FF9900; } /* ส้ม */
+        .cell-5-3 { background-color: #FF9900; } /* ส้ม */
+
+        /* Row 2 (Impact 2) */
+        .cell-1-2 { background-color: #009933; } /* เขียว */
+        .cell-2-2 { background-color: #99CC33; } /* เขียวอ่อน */
+        .cell-3-2 { background-color: #FFFF00; } /* เหลือง */
+        .cell-4-2 { background-color: #FFFF00; } /* เหลือง */
+        .cell-5-2 { background-color: #FF9900; } /* ส้ม */
+
+        /* Row 1 (Impact 1) - Bottom */
+        .cell-1-1 { background-color: #009933; } /* เขียว */
+        .cell-2-1 { background-color: #009933; } /* เขียว */
+        .cell-3-1 { background-color: #99CC33; } /* เขียวอ่อน */
+        .cell-4-1 { background-color: #99CC33; } /* เขียวอ่อน */
+        .cell-5-1 { background-color: #FFFF00; } /* เหลือง */
+
+        .risk-point {
+            width: 26px;
+            height: 26px;
+            background: white;
+            border: 2px solid #333;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: bold;
+            position: absolute;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            cursor: pointer;
+            z-index: 2;
+            transition: transform 0.2s;
+        }
+
+        .risk-point:active {
+            transform: scale(0.9);
+        }
+
+        /* Details Section */
+        .details-card {
+            background: #eaf3ee; /* Light green tint */
+            border-radius: 16px;
+            padding: 15px;
+            margin-top: 15px;
+        }
+        
+        .details-header {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 12px;
+            text-align: center;
+        }
+
+        .mitigation-plan {
+            margin-bottom: 15px;
+        }
+
+        .plan-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--raot-green);
+            margin-bottom: 6px;
+            display: flex;
+            align-items: flex-start;
+            gap: 6px;
+        }
+
+        .plan-list {
+            list-style: none;
+            padding-left: 10px;
+        }
+
+        .plan-list li {
+            font-size: 12px;
+            color: var(--text-gray);
+            margin-bottom: 6px;
+            line-height: 1.5;
+            position: relative;
+            padding-left: 12px;
+        }
+
+        .plan-list li::before {
+            content: "•";
+            color: var(--raot-light);
+            position: absolute;
+            left: 0;
+            top: 0;
+            font-weight: bold;
+        }
+
+        /* Selector for specific risk viewing */
+        .risk-selector {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 13px;
+            color: var(--text-dark);
+            margin-bottom: 15px;
+            background: white;
+            outline: none;
+        }
+        
+        /* Grid Labels */
+        .grid-label {
+            position: absolute;
+            font-size: 8px;
+            color: rgba(0,0,0,0.5);
+        }
+        .label-bottom { bottom: 2px; }
+        .label-left { left: 2px; }
+    </style>
+</head>
+<body>
+
+<div class="mobile-container">
+    <header>
+        <div class="header-title">
+            <i class="ph-fill ph-chart-line-up"></i>
+            <div>
+                <h1>รายงานสถานะความเสี่ยง</h1>
+            </div>
+        </div>
+        <div class="header-subtitle">ระบบติดตาม Risk Profile กยท.</div>
+    </header>
+
+    <div class="tabs-container">
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('corporate')">ระดับองค์กร</button>
+            <button class="tab-btn" onclick="switchTab('division')">ระดับสายงาน</button>
+            <button class="tab-btn" onclick="switchTab('department')">ระดับส่วนงาน</button>
+        </div>
+    </div>
+
+    <div style="padding: 10px 15px 0; display: flex; align-items: center; justify-content: space-between;">
+        <span style="font-size: 14px; font-weight: 600; color: var(--text-dark); display: flex; align-items: center; gap: 6px;">
+            <i class="ph-fill ph-calendar-blank" style="color: var(--raot-green);"></i> ข้อมูลประจำเดือน
+        </span>
+        <select id="monthSelector" style="padding: 6px 12px; border-radius: 8px; border: 1px solid var(--border-color); outline: none; font-size: 13px; background: white; color: var(--raot-green); font-weight: 600; box-shadow: 0 2px 5px rgba(0,0,0,0.05);" onchange="switchMonth()">
+            <option value="07-2026">กรกฎาคม 2569 (ล่าสุด)</option>
+            <option value="06-2026">มิถุนายน 2569</option>
+        </select>
+    </div>
+
+    <main>
+        <!-- Matrix View Section -->
+        <div class="risk-section">
+            <div class="section-header">
+                <span id="matrixTitle">Risk Profile: ระดับองค์กร (S, O, F, C, IT)</span>
+            </div>
+            
+            <select id="riskItemSelector" class="risk-selector" onchange="updateViewBasedOnSelection()">
+                <!-- Options populated by JS -->
+            </select>
+
+            <div id="activeRiskBadge" class="risk-factor-badge" style="display:none;"></div>
+
+            <div class="matrix-container">
+                <div class="y-axis-label">ผลกระทบ (Impact)</div>
+                
+                <div class="matrix-grid" id="matrixGrid">
+                    <!-- Row 5 -->
+                    <div class="matrix-cell cell-1-5"><span class="grid-label label-left">5</span></div>
+                    <div class="matrix-cell cell-2-5"></div>
+                    <div class="matrix-cell cell-3-5" id="cell-3-5"></div>
+                    <div class="matrix-cell cell-4-5"></div>
+                    <div class="matrix-cell cell-5-5"></div>
+                    
+                    <!-- Row 4 -->
+                    <div class="matrix-cell cell-1-4"><span class="grid-label label-left">4</span></div>
+                    <div class="matrix-cell cell-2-4"></div>
+                    <div class="matrix-cell cell-3-4"></div>
+                    <div class="matrix-cell cell-4-4"></div>
+                    <div class="matrix-cell cell-5-4"></div>
+                    
+                    <!-- Row 3 -->
+                    <div class="matrix-cell cell-1-3"><span class="grid-label label-left">3</span></div>
+                    <div class="matrix-cell cell-2-3"></div>
+                    <div class="matrix-cell cell-3-3"></div>
+                    <div class="matrix-cell cell-4-3"></div>
+                    <div class="matrix-cell cell-5-3"></div>
+                    
+                    <!-- Row 2 -->
+                    <div class="matrix-cell cell-1-2"><span class="grid-label label-left">2</span></div>
+                    <div class="matrix-cell cell-2-2"></div>
+                    <div class="matrix-cell cell-3-2"></div>
+                    <div class="matrix-cell cell-4-2"></div>
+                    <div class="matrix-cell cell-5-2" id="cell-5-2"></div>
+                    
+                    <!-- Row 1 -->
+                    <div class="matrix-cell cell-1-1"><span class="grid-label label-left label-bottom">1</span></div>
+                    <div class="matrix-cell cell-2-1"><span class="grid-label label-bottom">2</span></div>
+                    <div class="matrix-cell cell-3-1"><span class="grid-label label-bottom">3</span></div>
+                    <div class="matrix-cell cell-4-1"><span class="grid-label label-bottom">4</span></div>
+                    <div class="matrix-cell cell-5-1"><span class="grid-label label-bottom">5</span></div>
+                </div>
+
+                <div class="x-axis-label">โอกาสเกิด (Likelihood)</div>
+            </div>
+        </div>
+
+        <div class="details-card" id="detailsCard">
+            <div class="details-header">แผนจัดการความเสี่ยง</div>
+            <div id="mitigationPlansContainer">
+                <!-- Content populated by JS -->
+            </div>
+        </div>
+    </main>
+</div>
+
+<script>
+    const monthlyRiskData = {
+        '07-2026': { // ข้อมูลเดือนปัจจุบัน (ก.ค. 2569)
+            'corporate': [
+                {
+                    id: 'R1', title: 'S1 แนวโน้มพื้นที่สวนยางลดลง', code: 'S', likelihood: 3, impact: 5,
+                    plans: [
+                        {
+                            title: 'ปรับเปลี่ยนพื้นที่สวนยาง เป็นการใช้พื้นที่ให้ผลตอบแทนสูงกว่า',
+                            actions: [
+                                'ฝสผ./กสป. : ส่งเสริมให้เกษตรกรปรับเปลี่ยนพันธุ์ยางให้เป็นยางพันธุ์ใหม่ที่ให้ผลผลิตสูง',
+                                'ฝสผ./กพผ. : การนำนวัตกรรมมาใช้เพื่อเพิ่มผลผลิต',
+                                'ฝสผ./กสป. : ดำเนินการประชุมหารือกับ กยท.เขต'
+                            ]
+                        }
+                    ]
+                },
+                {
+                    id: 'R2', title: 'S2 ราคายางไม่มีเสถียรภาพ', code: 'S', likelihood: 5, impact: 2, // เดือนนี้โอกาสเกิดสูงขึ้น (5)
+                    plans: [
+                        {
+                            title: 'บริหารจัดการราคายาง',
+                            actions: [
+                                'ฝศย./กวย. : วิเคราะห์สถานการณ์ราคายางรายวัน',
+                                'ฝศย./กรย. : วางแผนการตลาดและรักษาเสถียรภาพ'
+                            ]
+                        }
+                    ]
+                },
+                {
+                    id: 'R3', title: 'O1 ระบบ IT ไม่เสถียร (Core Business)', code: 'IT', likelihood: 2, impact: 4,
+                    plans: [
+                        {
+                            title: 'พัฒนาระบบสำรองและโครงสร้างพื้นฐาน',
+                            actions: ['ฝทส. : จัดทำระบบ Data Center สำรอง (DR Site)', 'ฝทส. : ซักซ้อมแผน BCP']
+                        }
+                    ]
+                }
+            ],
+            'division': [
+                {
+                    id: 'D1', title: 'ด้านปฏิบัติการ: การเบิกจ่ายเงินปลูกแทนล่าช้า', code: 'OP', likelihood: 4, impact: 3,
+                    plans: [{ title: 'ปรับปรุงกระบวนการพิจารณาอนุมัติ', actions: ['ลดขั้นตอนเอกสาร นำระบบ E-Service มาใช้'] }]
+                }
+            ],
+            'department': [
+                {
+                    id: 'DP1', title: 'กองพัสดุ: การจัดซื้อจัดจ้างไม่ทันตามแผน', code: 'C', likelihood: 3, impact: 3,
+                    plans: [{ title: 'ติดตามการจัดทำ TOR', actions: ['แจ้งเตือนล่วงหน้า 30 วัน', 'จัดอบรม พ.ร.บ. จัดซื้อจัดจ้าง'] }]
+                }
+            ]
+        },
+        '06-2026': { // ข้อมูลเดือนที่แล้ว (มิ.ย. 2569) - เพื่อแสดงให้เห็นการเปลี่ยนแปลง
+            'corporate': [
+                {
+                    id: 'R1', title: 'S1 แนวโน้มพื้นที่สวนยางลดลง', code: 'S', likelihood: 3, impact: 5,
+                    plans: [
+                        { title: 'ปรับเปลี่ยนพื้นที่สวนยาง', actions: ['ฝสผ./กสป. : ส่งเสริมการปลูกยางพันธุ์ดี'] }
+                    ]
+                },
+                {
+                    id: 'R2', title: 'S2 ราคายางไม่มีเสถียรภาพ', code: 'S', likelihood: 4, impact: 2, // เดือนที่แล้วโอกาสเกิดต่ำกว่า (4)
+                    plans: [
+                        { title: 'บริหารจัดการราคายาง', actions: ['วิเคราะห์สถานการณ์ตลาดล่วงหน้า'] }
+                    ]
+                },
+                {
+                    id: 'R3', title: 'O1 ระบบ IT ไม่เสถียร (Core Business)', code: 'IT', likelihood: 3, impact: 4, // เดือนที่แล้ว IT เสี่ยงกว่านี้ (3)
+                    plans: [
+                        { title: 'พัฒนาระบบสำรอง', actions: ['เตรียมจัดทำ DR Site'] }
+                    ]
+                }
+            ],
+            'division': [
+                {
+                    id: 'D1', title: 'ด้านปฏิบัติการ: การเบิกจ่ายเงินปลูกแทนล่าช้า', code: 'OP', likelihood: 5, impact: 3, // เดือนที่แล้วล่าช้ามาก (5)
+                    plans: [{ title: 'เร่งรัดการพิจารณา', actions: ['จัดชุดเฉพาะกิจลงพื้นที่'] }]
+                }
+            ],
+            'department': [
+                {
+                    id: 'DP1', title: 'กองพัสดุ: การจัดซื้อจัดจ้างไม่ทันตามแผน', code: 'C', likelihood: 3, impact: 3,
+                    plans: [{ title: 'ติดตามการจัดทำ TOR', actions: ['แจ้งเตือนล่วงหน้า 30 วัน'] }]
+                }
+            ]
+        }
+    };
+
+    let currentLevel = 'corporate';
+    let currentMonth = '07-2026'; // ค่าเริ่มต้นเป็นเดือนล่าสุด
+
+    function switchMonth() {
+        currentMonth = document.getElementById('monthSelector').value;
+        // อัปเดตข้อมูลในหน้าจอทั้งหมดตามเดือนที่เลือก
+        populateSelector(currentLevel);
+        updateViewBasedOnSelection();
+    }
+
+    function switchTab(level) {
+        currentLevel = level;
+        
+        // Update tabs styling
+        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+        event.currentTarget.classList.add('active');
+
+        // Update Title
+        const titles = {
+            'corporate': 'Risk Profile: ระดับองค์กร (S, O, F, C, IT)',
+            'division': 'Risk Profile: ระดับสายงาน (รองผู้ว่าการฯ)',
+            'department': 'Risk Profile: ระดับส่วนงาน/หน่วยงาน'
+        };
+        document.getElementById('matrixTitle').innerText = titles[level];
+
+        // Populate Selector
+        populateSelector(level);
+        
+        // Render View based on first item
+        updateViewBasedOnSelection();
+    }
+
+    function populateSelector(level) {
+        const selector = document.getElementById('riskItemSelector');
+        selector.innerHTML = '';
+        
+        // Option to view ALL in category
+        const allOption = document.createElement('option');
+        allOption.value = 'all';
+        allOption.innerText = '-- ดูภาพรวมทั้งหมดในหมวดนี้ --';
+        selector.appendChild(allOption);
+
+        // ดึงข้อมูลตามเดือนและระดับที่เลือก
+        const monthData = monthlyRiskData[currentMonth][level] || [];
+
+        monthData.forEach(risk => {
+            const option = document.createElement('option');
+            option.value = risk.id;
+            option.innerText = risk.title;
+            selector.appendChild(option);
+        });
+    }
+
+    function updateViewBasedOnSelection() {
+        const selector = document.getElementById('riskItemSelector');
+        const selectedId = selector.value;
+        const monthData = monthlyRiskData[currentMonth][currentLevel] || [];
+        
+        clearMatrix();
+        
+        if (selectedId === 'all') {
+            document.getElementById('activeRiskBadge').style.display = 'none';
+            // Plot all points
+            monthData.forEach(risk => plotRiskOnMatrix(risk));
+            renderMitigationPlans(monthData); // Render all plans
+        } else {
+            const selectedRisk = monthData.find(r => r.id === selectedId);
+            if (selectedRisk) {
+                // Show Badge
+                const badge = document.getElementById('activeRiskBadge');
+                badge.style.display = 'inline-block';
+                badge.innerText = selectedRisk.title;
+
+                // Plot single point
+                plotRiskOnMatrix(selectedRisk);
+                renderMitigationPlans([selectedRisk]); // Render single plan
+            }
+        }
+    }
+
+    function clearMatrix() {
+        document.querySelectorAll('.risk-point').forEach(point => point.remove());
+    }
+
+    function plotRiskOnMatrix(risk) {
+        const l = risk.likelihood;
+        const i = risk.impact;
+        
+        if(l >= 1 && l <= 5 && i >= 1 && i <= 5) {
+            const rowClass = `cell-${l}-${i}`;
+            const targetCell = document.querySelector(`.${rowClass}`);
+            
+            if (targetCell) {
+                const point = document.createElement('div');
+                point.className = 'risk-point';
+                point.innerText = risk.id;
+                
+                const existingPoints = targetCell.querySelectorAll('.risk-point').length;
+                if(existingPoints > 0) {
+                    point.style.transform = `translate(${existingPoints * 5}px, ${existingPoints * 5}px)`;
+                }
+
+                targetCell.appendChild(point);
+            }
+        }
+    }
+
+    function renderMitigationPlans(risksToRender) {
+        const container = document.getElementById('mitigationPlansContainer');
+        container.innerHTML = '';
+
+        if(risksToRender.length === 0) {
+            container.innerHTML = '<p style="font-size: 13px; color: #888; text-align: center;">ไม่มีข้อมูลแผนจัดการสำหรับเดือนนี้</p>';
+            return;
+        }
+
+        risksToRender.forEach(risk => {
+            risk.plans.forEach(plan => {
+                const planDiv = document.createElement('div');
+                planDiv.className = 'mitigation-plan';
+                
+                let actionsHtml = '';
+                plan.actions.forEach(action => {
+                    actionsHtml += `<li>${action}</li>`;
+                });
+
+                planDiv.innerHTML = `
+                    <div class="plan-title">
+                        <span style="background:var(--raot-green); color:white; padding:2px 6px; border-radius:4px; font-size:10px;">${risk.id}</span>
+                        ${plan.title}
+                    </div>
+                    <ul class="plan-list">
+                        ${actionsHtml}
+                    </ul>
+                `;
+                container.appendChild(planDiv);
+            });
+        });
+    }
+
+    // Initialize on load
+    document.addEventListener('DOMContentLoaded', () => {
+        // Find existing DOM elements to ensure they exist before calling logic (safety check)
+        const tabs = document.querySelector('.tabs');
+        if(tabs) {
+            // Programmatically click the first tab to initialize
+            tabs.querySelector('.tab-btn').click();
+        }
+    });
+</script>
+</body>
+</html>
